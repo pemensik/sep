@@ -4,7 +4,8 @@ Version: 1.2.0
 %forgemeta
 
 Name: sep
-Release: %autorelease
+# Ensure higher version than the last build of python-sep is used
+Release: %autorelease -b 4
 Summary: Astronomical source extraction and photometry in Python and C
 
 # Code from photutils is BSD (src/overlap.h)
