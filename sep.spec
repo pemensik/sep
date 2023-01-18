@@ -1,6 +1,6 @@
 %global forgeurl0 https://github.com/kbarbary/sep
 
-Version: 1.2.0
+Version: 1.2.1
 %forgemeta
 
 Name: sep
