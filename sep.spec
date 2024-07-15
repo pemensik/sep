@@ -1,5 +1,7 @@
 %global forgeurl0 https://github.com/kbarbary/sep
 
+%bcond_without tests
+
 Version: 1.2.1
 %forgemeta
 
@@ -11,7 +13,7 @@ Summary: Astronomical source extraction and photometry in Python and C
 # Code from photutils is BSD (src/overlap.h)
 # Code from sextractor is LGPLv3+
 # Python wrapper is MIT (sex.pyx)
-License: MIT and LGPLv3+ and BSD
+License: MIT and LGPL-3 and BSD-3-Clause
 
 URL: http://sep.readthedocs.org/
 Source0: %forgesource0
@@ -19,6 +21,11 @@ Source0: %forgesource0
 BuildRequires: gcc
 BuildRequires: cmake
 BuildRequires: python3-devel
+BuildRequires: pyproject-rpm-macros
+BuildRequires: sed
+%if %{with tests}
+BuildRequires: tox
+%endif
 
 %global common_desc %{expand:
 SEP makes available some of the astronomical source extraction and 
@@ -53,17 +60,32 @@ BuildRequires: %{py3_dist numpy}
 %{common_desc}
 
 
+%generate_buildrequires
+%if %{with tests}
+  %pyproject_buildrequires -t
+%else
+  %pyproject_buildrequires
+%endif
+#
+
 %prep
 %forgeautosetup -p1
+sed -e 's/"oldest-supported-numpy"/"numpy"/' -i pyproject.toml
 
 %build
 %cmake
 %cmake_build
-%py3_build
+%pyproject_wheel
 
 %install
 %cmake_install
-%py3_install
+%pyproject_install
+%pyproject_save_files %{name}
+
+%check
+%if %{with tests}
+  %tox run
+%endif
 
 %files
 %doc AUTHORS.md README.md CHANGES.md
@@ -74,11 +96,9 @@ BuildRequires: %{py3_dist numpy}
 %{_libdir}/libsep.so
 %{_includedir}/sep.h
 
-%files -n python3-%{name}
+%files -n python3-%{name} -f %{pyproject_files}
 %doc AUTHORS.md README.md CHANGES.md
 %license licenses/MIT_LICENSE.txt licenses/LGPL_LICENSE.txt licenses/BSD_LICENSE.txt
-%{python3_sitearch}/sep-*.egg-info
-%{python3_sitearch}/sep*.so
 
 %changelog
 %autochangelog
